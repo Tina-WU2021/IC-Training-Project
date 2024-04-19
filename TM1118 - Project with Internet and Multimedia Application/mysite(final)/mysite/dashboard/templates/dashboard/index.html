@@ -1,0 +1,346 @@
+<!doctype html>
+<HTML>
+    <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-
+wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <title>IC2140 IoT Dashboard</title>
+        <style>html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}</style>
+    </head>
+    <body>
+        <h1 class="display-3 p-3 mb-2 bg-success text-white">IC2140 IoT Dashboard</h1>
+
+        <div w3-include-html="http://localhost:8000/iot/nav_bar"></div>
+        <script src="https://cdn.flexmonster.com/flexmonster.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.flexmonster.com/theme/orange/flexmonster.min.css"/>
+        
+        <div id="pivot-container1" ></div>
+        <div id="pivot-container2" ></div>
+
+        
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        
+
+        <script>
+            includeHTML()
+            
+            function includeHTML() {
+                var z, i, elmnt, file, xhttp;
+                /* Loop through a collection of all HTML elements: */
+                z = document.getElementsByTagName("*");
+                for (i = 0; i < z.length; i++) {
+                    elmnt = z[i];
+                    /*search for elements with a certain atrribute:*/
+                    file = elmnt.getAttribute("w3-include-html");
+                    if (file) {
+                    /* Make an HTTP request using the attribute value as the file name: */
+                    xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                        if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+                        if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+                        /* Remove the attribute, and call this function once more: */
+                        elmnt.removeAttribute("w3-include-html");
+                        includeHTML();
+                        }
+                    }
+                    xhttp.open("GET", file, true);
+                    xhttp.send();
+                    /* Exit the function: */
+                    return;
+                    }
+                }
+                }
+         </script>
+
+        <script>
+            function processData(dataset) {
+                var result = []
+                dataset = JSON.parse(dataset);
+                dataset.forEach(item => result.push(item.fields));return result;
+            }
+        </script>
+        <script>
+            let table1;
+            let table2;
+            let table3;
+            $.ajax({
+                url: '/dashboard/temp_data',
+                dataType: 'json',
+                success: function(data) {
+                    table1 = new Flexmonster({
+                        container: "#pivot-container1",
+                        componentFolder: "https://cdn.flexmonster.com/",
+                        //toolbar: true,
+                        report: {
+                            dataSource: {
+                                type: "json",
+                                data: processData(data),
+                                mapping: {
+                                    "node_id": { "caption": "ID" },
+                                    "node_loc": { "caption": "Location" },
+                                    "temp": {"type": "number" },
+                                    "hum": {"type": "number" },
+                                    "light": {"type": "number"},
+                                    "snd": {"type": "number"},
+                                    "date_created": { "caption": "Created Date", "type": "datetime"}
+                                },
+                            },
+                            slice: {
+                                rows: [
+                                    { uniqueName : "node_loc"},
+                                ],
+                                columns: [
+                                    
+                                    { uniqueName : "[measures]", label : "Temperature" },
+                                ],
+                                measures: [
+                                    { 
+                                        uniqueName : "temp",
+                                        aggregation: "min",
+                                        caption: "Min Temp",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "temp",
+                                        aggregation: "max",
+                                        caption: "Max Temp",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "temp",
+                                        aggregation: "average",
+                                        caption: "Avg Temp",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "hum",
+                                        aggregation: "min",
+                                        caption: "Min Hum",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "hum",
+                                        aggregation: "max",
+                                        caption: "Max Hum",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "hum",
+                                        aggregation: "average",
+                                        caption: "Avg Hum",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "light",
+                                        aggregation: "min",
+                                        caption: "Min Light",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "light",
+                                        aggregation: "max",
+                                        caption: "Max Light",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "light",
+                                        aggregation: "average",
+                                        caption: "Avg Light",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "snd",
+                                        aggregation: "min",
+                                        caption: "Min Snd",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "snd",
+                                        aggregation: "max",
+                                        caption: "Max Snd",
+                                        active: true
+                                    },
+                                    { 
+                                        uniqueName : "snd",
+                                        aggregation: "average",
+                                        caption: "Avg Snd",
+                                        active: true
+                                    },
+                                ]
+                            },
+                            formats: [
+                                {
+                                    name: "degree",
+                                    decimalPlaces: 1,
+                                }
+                            ],
+                            conditions: [    
+                            ],
+                            options: {
+                                viewType: "grids",
+                                showAggregationLabels: false,
+                                showTotals: "off",
+                                showGrandTotals: "off",
+                                chart: {
+                                    type: "line",
+                                    title: "IoT Sensor",
+                                    showFilter: false,
+                                },
+                            },
+                        }
+                    });
+                    table2 = new Flexmonster({
+                        container: "#pivot-container2",
+                        componentFolder: "https://cdn.flexmonster.com/",
+                        //toolbar: true,
+                        report: {
+                            dataSource: {
+                                type: "json",
+                                data: processData(data),
+                                mapping: {
+                                    "node_id": { "caption": "ID" },
+                                    "node_loc": { "caption": "Location" },
+                                    "temp": { "caption": "Temperature", "type": "number" },
+                                    "hum": {"caption": "Humidity", "type": "number" },
+                                    "light": {"caption": "light", "type": "number"},
+                                    "snd": {"caption": "snd", "type": "number"},
+                                    "date_created": { "caption": "Created Date", "type": "datetime"}
+                                },
+                            },
+                            slice: {
+                                rows: [
+                                    { uniqueName : "date_created"},
+                                ],
+                                columns: [
+                                    { uniqueName : "node_loc"},
+                                    { uniqueName : "[measures]", label : "Temperature" },
+                                ],
+                                measures: [
+                                    { 
+                                        uniqueName : "temp",
+                                        format : "degree",
+                                    },
+                                    { 
+                                        uniqueName : "hum",
+                                        format : "degree",
+                                    },
+                                    { 
+                                        uniqueName : "light",
+                                    },
+                                    { 
+                                        uniqueName : "snd",
+                                    },
+                                ]
+                            },
+                            formats: [
+                                {
+                                    name: "degree",
+                                    decimalPlaces: 1,
+                                }
+                            ],
+                            conditions: [
+                                {
+                                    formula: "#value < 10",
+                                    measure: "temp",
+                                    format: {
+                                        "color": "#0000FF"
+                                    }
+                                },
+                                {
+                                    formula: "#value > 30",
+                                    measure: "temp",
+                                    format: {
+                                        "color": "#FF0000"
+                                    }
+                                },
+                                {
+                                    formula: "#value < 10",
+                                    measure: "light",
+                                    format: {
+                                        "color": "#0000FF"
+                                    }
+                                },
+                                {
+                                    formula: "#value > 80",
+                                    measure: "light",
+                                    format: {
+                                        "color": "#FF0000"
+                                    }
+                                },
+                                {
+                                    formula: "#value < 40",
+                                    measure: "hum",
+                                    format: {
+                                        "color": "#0000FF"
+                                    }
+                                },
+                                {
+                                    formula: "#value > 150",
+                                    measure: "hum",
+                                    format: {
+                                        "color": "#FF0000"
+                                    }
+                                },
+                                {
+                                    formula: "#value < -90",
+                                    measure: "snd",
+                                    format: {
+                                        "color": "#0000FF"
+                                    }
+                                },
+                                {
+                                    formula: "#value > 90",
+                                    measure: "snd",
+                                    format: {
+                                        "color": "#FF0000"
+                                    }
+                                },
+                                
+                                
+                            ],
+                            options: {
+                                viewType: "grid_charts",
+                                showAggregationLabels: false,
+                                showTotals: "off",
+                                showGrandTotals: "off",
+                                chart: {
+                                    type: "line",
+                                    position: "left",
+                                    title: "IoT Sensor",
+                                    showFilter: false,
+                                },
+                            },
+                        }
+                    });
+                }
+            });
+        </script>
+        <script>
+        function getFeed() {
+            $.ajax({
+                url: '/dashboard/temp_data',
+                dataType: 'json',
+                success: function(data) {
+                    table1.updateData({
+                        data: processData(data)
+                    });
+                    table2.updateData({
+                        data: processData(data)
+                    });
+
+                },
+                complete:function(data) {
+                    setTimeout(getFeed, 10000);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            setTimeout(getFeed, 10000); // 5 seconds
+        });
+        </script>
+    </body>
+</HTML>

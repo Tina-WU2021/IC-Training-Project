@@ -1,0 +1,41 @@
+import RPi.GPIO as GPIO
+import time
+
+def button_released_callback(channel):
+    global should_blink
+    should_blink = not should_blink
+    GPIO.output(blink, GPIO.LOW)
+    
+
+BUTTON_GPIO=20
+output_channel=[18,23,24,25,8]
+should_blink=False
+blink=[18,24,8]
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(BUTTON_GPIO,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(output_channel,GPIO.OUT,initial=0)
+GPIO.add_event_detect(BUTTON_GPIO,GPIO.RISING,
+callback=button_released_callback,bouncetime=200)
+
+
+try:
+    while(1):  
+        if should_blink:
+            GPIO.output(output_channel, GPIO.HIGH)
+        else:
+            GPIO.output([23,25], GPIO.HIGH)
+        time.sleep(0.5)
+        if should_blink:
+            GPIO.output(output_channel, GPIO.LOW)
+        else:
+            GPIO.output([23,25], GPIO.LOW)
+        time.sleep(0.5)
+            
+          
+except KeyboardInterrupt:
+    GPIO.cleanup()
+    print('End Of Program')            
+        
+        

@@ -1,0 +1,15 @@
+import time
+import threading
+from RPLCD.i2c import CharLCD
+lcd=CharLCD('PCF8574',0x27)
+
+def timer_interrupt():
+    lcd.cursor_pos=(0,3)
+    timer = threading.Timer(1,timer_interrupt) 
+    timer.start() 
+    t = time.asctime(time.localtime(time.time()))
+    lcd.write_string(t[10:-4])
+    lcd.cursor_pos=(1,0)
+    lcd.write_string(t[:10]+", "+t[-4:])
+  
+timer_interrupt()

@@ -1,0 +1,179 @@
+<!doctype html>
+<HTML>
+    <head>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-
+wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <title>Time-Event-Data Application</title>
+        <style>
+            * {
+              box-sizing: border-box;
+            }
+
+            
+            html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+            /* Style the header */
+            .header {
+              grid-area: header;
+              background-color: #f1f1f1;
+              padding: 30px;
+              text-align: center;
+              font-size: 25px;
+            }
+            
+            /* The grid container */
+            .grid-container {
+              display: grid;
+              grid-template-areas: 
+                'header header header header header header' 
+                'left left left left right right' 
+                'footer footer footer footer footer footer';
+              grid-column-gap: 30px;
+            } 
+            
+            /* Style the left column */
+            .left {
+                text-align: center;
+                grid-area: left;
+                font-size: 18px;
+                color: white
+            }
+            
+            /* Style the right column */
+            .right {
+              grid-area: right;
+              font-size: 18px;
+            }
+            
+            /* Style the footer */
+            .footer {
+              grid-area: footer;
+              background-color: #f1f1f1;
+              padding: 10px;
+              text-align: center;
+            }
+            
+            /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+            @media (max-width: 600px) {
+              .grid-container  {
+                grid-template-areas: 
+                  'header header header header header header' 
+                  'left left left left left left' 
+                  'right right right right right right' 
+                  'footer footer footer footer footer footer';
+              }
+            }
+            </style>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    </head>
+    <body>
+        <h1 class="display-3 p-3 mb-2 bg-success text-white">Time-Event-Data Application</h1>
+        <div w3-include-html="http://localhost:8000/iot/nav_bar"></div>
+
+        <div class="grid-container">          
+            <div class="header">              
+              <h2>Event(s) and Average Environmental Data at <strong>{{ venues }}</strong></h2>
+              <h3>during {{ period.start }} - {{ period.end }}</h3>
+            </div>
+            <div class="left" style="background-color:#FFFFFF;">
+              <h4 style="color:black;">Current setting: sorting by {{ sort }} in {{ order }} order</h4>  
+                  <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Venue</th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Time start</th>
+                            <th>Time end</th>
+                            <th>Instructor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr> 
+                            <th>{{ event.venue }}</th>
+                            <td><strong>{{ event.event }}</strong></td>
+                            <td>{{ event.date }}</td>
+                            <td>{{ event.start_time }}</td>
+                            <td>{{ event.end_time }}</td>
+                            <td>{{ event.instructor }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>  
+            <div class="right" style="background-color:#FFFFFF;">
+                {% for data in envdata %}
+                <h3>{{ data.node_loc }}</h3>
+                <table class="table table-striped table-hover">
+                    
+                    <tr> 
+                        <th class="table-dark">Temperature (°C)</th>
+                        <td>{{ data.temp }}</td>
+                    </tr>
+                    <tr>
+                        <th class="table-dark">Humidity (%)</th>
+                        <td>{{ data.hum }}</td>
+                    </tr>
+                    <tr>
+                        <th class="table-dark">Light Intensity (%)</th>
+                        <td>{{ data.light }}</td>
+                    </tr>
+                    <tr>
+                        <th class="table-dark">Sound Level (dB)</th>
+                        <td>{{ data.snd }}</td>
+                    </tr>
+                    
+                </table>
+                <br>
+                {% endfor %}
+            </div>
+            
+            <div class="footer">
+              <p>TM1118 TEAM D02</p>
+            </div>
+          </div>
+
+          
+    </body>
+  <script>
+      includeHTML()
+      
+      function includeHTML() {
+          var z, i, elmnt, file, xhttp;
+          /* Loop through a collection of all HTML elements: */
+          z = document.getElementsByTagName("*");
+          for (i = 0; i < z.length; i++) {
+              elmnt = z[i];
+              /*search for elements with a certain atrribute:*/
+              file = elmnt.getAttribute("w3-include-html");
+              if (file) {
+              /* Make an HTTP request using the attribute value as the file name: */
+              xhttp = new XMLHttpRequest();
+              xhttp.onreadystatechange = function() {
+                  if (this.readyState == 4) {
+                  if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+                  if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+                  /* Remove the attribute, and call this function once more: */
+                  elmnt.removeAttribute("w3-include-html");
+                  includeHTML();
+                  }
+              }
+              xhttp.open("GET", file, true);
+              xhttp.send();
+              /* Exit the function: */
+              return;
+              }
+          }
+          }
+   
+  </script>
+
+
+   
+</HTML>

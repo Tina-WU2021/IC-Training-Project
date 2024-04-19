@@ -1,0 +1,45 @@
+import RPi.GPIO as GPIO
+import time
+
+def button_callback(channel):
+    if(not GPIO.input(20)):
+        global should_blink
+        should_blink = not should_blink
+        GPIO.output(output_channel, GPIO.LOW)
+        p.start(100)
+    else:
+        should_blink = False
+        GPIO.output(output_channel, GPIO.HIGH)
+        p.stop()
+        print("RISING edge detected")
+
+BUTTON_GPIO=20
+output_channel=8
+#should_blink=False
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(BUTTON_GPIO,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(18,GPIO.OUT,initial=0)
+GPIO.setup(23,GPIO.OUT,initial=0)
+GPIO.setup(24,GPIO.OUT,initial=0)
+GPIO.setup(25,GPIO.OUT,initial=0)
+GPIO.setup(8,GPIO.OUT,initial=0)
+GPIO.setup(26,GPIO.OUT,initial=0)
+GPIO.add_event_detect(BUTTON_GPIO,GPIO.BOTH,
+callback=button_callback)
+p=GPIO.PWM(26,50)
+
+try:
+    while(1):  
+        if should_blink:
+            GPIO.output(output_channel, GPIO.HIGH)
+        time.sleep(0.5)
+        if should_blink:
+            GPIO.output(output_channel, GPIO.LOW)
+        time.sleep(0.5)
+                     
+except KeyboardInterrupt:
+    p.stop()
+    GPIO.cleanup()
+    print('End Of Program')                 

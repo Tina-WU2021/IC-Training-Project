@@ -1,0 +1,45 @@
+import time
+import threading
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+GPIO.setup(18,GPIO.OUT,initial=0)
+GPIO.setup(23,GPIO.OUT,initial=0)
+GPIO.setup(24,GPIO.OUT,initial=0)
+GPIO.setup(25,GPIO.OUT,initial=0)
+GPIO.setup(8,GPIO.OUT,initial=0)
+
+flag=False
+flag1=False
+
+
+def timer_interrupt():
+    global flag
+    timer = threading.Timer(3,timer_interrupt) 
+    timer.start() 
+    print('Timer1:')
+    print (time.asctime(time.localtime(time.time())))
+    flag = not(flag)
+    
+    
+def timer_interrupt1():
+    global flag1
+    timer = threading.Timer(5,timer_interrupt1) 
+    timer.start()
+    print('Timer2:')
+    print (time.asctime(time.localtime(time.time())))
+    flag1 = not(flag1)
+    
+timer_interrupt()
+timer_interrupt1()
+while True:
+    if flag:
+        GPIO.output([23,25],GPIO.HIGH)
+    else:
+        GPIO.output([23,25],GPIO.LOW)
+    if flag1:        
+        GPIO.output([18,24,8],GPIO.HIGH)
+    else:
+        GPIO.output([18,24,8],GPIO.LOW)

@@ -1,0 +1,141 @@
+<!doctype html>
+<HTML>
+    <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-
+wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <title>IC2140 IoT Dashboard</title>
+        <style>html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}</style>
+    </head>
+    <body>
+        <h1 class="display-3 p-3 mb-2 bg-success text-white">IC2140 IoT Dashboard</h1>
+        <script src="https://cdn.flexmonster.com/flexmonster.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.flexmonster.com/theme/orange/flexmonster.min.css"/>
+        
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Sensor ID</th>
+                    <th>Location</th>
+                    <th>max. Temp</th>
+                    <th>min. Temp</th>
+                    <th>avg. Temp</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td><strong>{{ event.node_id }}</strong></td>
+                    <td><strong>{{ event.node_loc|upper }}</strong></td>
+                    <td>{{ event.max_temp }}</td>
+                    <td>{{ event.min_temp }}</td>
+                    <td>{{ event.avg_temp }}</td>
+                    <td>{{ event.last_updated }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="pivot-container" ></div>
+        <script>
+            function processData(dataset) {
+                var result = []
+                dataset = JSON.parse(dataset);
+                dataset.forEach(item => result.push(item.fields));return result;
+            }
+        </script>
+        <script>
+            $.ajax({
+                url: '/dashboard/temp_data',
+                dataType: 'json',
+                success: function(data) {
+                    new Flexmonster({
+                        container: "#pivot-container",
+                        componentFolder: "https://cdn.flexmonster.com/",
+                        toolbar: true,
+                        height: 800,
+                        report: {
+                            dataSource: {
+                                type: "json",
+                                data: processData(data),
+                                mapping: {
+                                    "node_id": { "caption": "Sensor ID", "type": "number" },
+                                    "node_loc": { "caption": "Location" },
+                                    "temp": { "caption": "Temperature", "type": "number" },
+                                    "date_created": { "caption": "Created Date", "type": "datetime"}
+                                },
+                            },
+                            slice: {
+                                rows: [
+                                    { uniqueName : "date_created"},
+                                ],
+                                columns: [
+                                    { uniqueName : "node_loc"},
+                                    { uniqueName : "[measures]", label : "Temperature" },
+                                ],
+                                measures: [
+                                    { 
+                                        uniqueName : "temp",
+                                        format : "degree",
+                                    },
+                                    { 
+                                        uniqueName : "node_id",
+                                    },
+                                ]
+                            },
+                            formats: [
+                                {
+                                    name: "degree",
+                                    decimalPlaces: 2,
+                                }
+                            ],
+                            conditions: [
+                                {
+                                    formula: "#value > 30",
+                                    measure: "temp",
+                                    format: {
+                                        'backgroundColor': "#F5B8BC",
+                                        "color": "#0000FF"
+                                    }
+                                }
+                            ],
+                            options: {
+                                viewType: "grid_charts",
+                                showAggregationLabels: false,
+                                grid: {
+                                    showGrandTotals: "off"
+                                },
+                                chart: {
+                                    type: "line",
+                                    title: "IoT Sensor",
+                                },
+                            },
+                        }
+                    });
+                }
+            });
+        </script>
+        <script>
+        function getFeed() {
+            $.ajax({
+                url: '/dashboard/temp_data',
+                dataType: 'json',
+                success: function(data) {
+                    flexmonster.updateData({
+                        data: processData(data)
+                    });
+                },
+                complete:function(data) {
+                    setTimeout(getFeed, 3000);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            setTimeout(getFeed, 3000); // 5 seconds
+        });
+        </script>
+    </body>
+</HTML>

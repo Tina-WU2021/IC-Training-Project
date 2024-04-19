@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Uncommon Data in the period of mid-night (01:00 - 05:00 am)
+        </title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-
+wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <style>html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}</style>
+    </head>
+    <body>
+        <div class = "Head Part">
+           
+            <h1 class="display-3 p-3 mb-2 bg-success text-white">Uncommon Data</h1>
+            <div w3-include-html="http://localhost:8000/iot/nav_bar"></div>
+
+            <label for="locs">Choose a location:</label>
+
+            <select name="location" id="locationSelector" onchange="DataHiddenWithLocation()">
+
+            </select>
+            
+            
+
+        </div>
+        <div id = "Data">
+            <table class="table table-striped" id="dataTable">
+                <thead class="table-dark">
+                    <tr>
+                    <th>Date </th>
+                    <th>Sensor ID</th>
+                    <th>Location</th>
+                    <th>Light intensity</th>
+                    <th>Ambient sound level (dB)</th>
+                    </tr>
+                </thead>
+                <tbody id = "mark_data">
+                    
+                    
+                </tbody>
+              </table>
+
+            
+        </div>
+    </body>
+
+    <script>
+        includeHTML()
+        
+        function includeHTML() {
+            var z, i, elmnt, file, xhttp;
+            /* Loop through a collection of all HTML elements: */
+            z = document.getElementsByTagName("*");
+            for (i = 0; i < z.length; i++) {
+                elmnt = z[i];
+                /*search for elements with a certain atrribute:*/
+                file = elmnt.getAttribute("w3-include-html");
+                if (file) {
+                /* Make an HTTP request using the attribute value as the file name: */
+                xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                    if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+                    if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+                    /* Remove the attribute, and call this function once more: */
+                    elmnt.removeAttribute("w3-include-html");
+                    includeHTML();
+                    }
+                }
+                xhttp.open("GET", file, true);
+                xhttp.send();
+                /* Exit the function: */
+                return;
+                }
+            }
+            }
+     </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <script>
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+            data = []
+            result = JSON.parse(JSON.parse(this.responseText))
+            for(i=0; i< result.length; i++){
+                data.push(result[i]["fields"])
+                
+            }
+            
+            loadAllDataInTable(data);
+        }
+        xhttp.open("GET", "/iot/temp_data", true);
+        xhttp.send();
+    </script>    
+
+    <script>      
+        function loadAllDataInTable(ajaxData){
+            var htmlstr = "";
+            var unique = []
+            var countdanger =0;
+            for(i = 0 ; i < ajaxData.length;i++){
+                element = ajaxData[i]
+                time_hour = new Date(element.date_created).getHours()
+                if(element.light >50 && time_hour > 0 && time_hour < 6 && element.snd > 40){
+                    var datetime1 = new Date(element.date_created).toString();
+
+                    htmlstr += "<tr class='datarow' filtervalue = '"+element.node_loc+"'>"
+                    htmlstr += "<td>" +datetime1+ "</td>"
+                    htmlstr += "<td>" +element.node_id+ "</td>"
+                    htmlstr += "<td>" +element.node_loc+ "</td>"   
+                   
+                    htmlstr += "<td class='text-danger'>" +element.light+ "</td>"   
+                    htmlstr += "<td class='text-danger'>" +element.snd+ "</td>"           
+                    htmlstr +="</tr>"
+                    unique[element.node_loc] = "1"
+                    countdanger ++;
+                }
+            }
+
+            const keys = Object.keys(unique);
+
+            setDropDownList(keys)
+            $('#mark_data').append(htmlstr);
+            if(countdanger > 0){
+                alert("The enironmental data is not common.")
+            }
+        }
+
+        function setDropDownList(keys){
+            var htmlstr = "<option value='All'>All</option>";
+            for(i = 0 ; i < keys.length;i++){
+                htmlstr += "<option value='" + keys[i] + "'>"+keys[i]+"</option>"
+            }
+            $('#locationSelector').append(htmlstr);
+        }
+
+        function DataHiddenWithLocation(){
+            var select = document.getElementById('locationSelector');
+            var value = select.options[select.selectedIndex].value;
+            var rowset = document.getElementsByClassName('datarow')
+            
+            if(value == "All"){
+                for(i=0; i<rowset.length;i++){
+                    rowset[i].classList.remove("d-none");
+                }
+            }
+            else {
+                for(i=0; i<rowset.length;i++){
+                    var filtervalue = rowset[i].getAttribute("filtervalue")
+                    if(value == filtervalue) {
+                        rowset[i].classList.remove("d-none");
+                    }else{
+                        rowset[i].classList.add("d-none");
+                    }
+                }
+            }
+        }
+
+        
+
+        
+        
+    </script>
+
+
+
+   
+</html>

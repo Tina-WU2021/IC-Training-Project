@@ -1,0 +1,22 @@
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+output_channel=18
+input_channel=[20,21]
+GPIO.setup(input_channel,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(output_channel,GPIO.OUT,initial=GPIO.LOW)
+
+try:
+    while(1):
+        if GPIO.input(21)==0:
+            GPIO.output(18,False)
+            print('SW1 pressed')
+        if GPIO.input(20)==0:
+            GPIO.output(18,True)
+            time.sleep(0.3)
+            print('SW2 pressed''\n''no debouncing with a delay')
+except KeyboardInterrupt:
+    GPIO.cleanup()
+    print('End Of Program')
